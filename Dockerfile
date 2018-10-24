@@ -14,12 +14,12 @@ ENV GROUP_ID ${GROUP_ID:-1000}
 RUN groupadd -g ${GROUP_ID} bitcoin \
 	&& useradd -u ${USER_ID} -g bitcoin -s /bin/bash -m -d /bitcoin bitcoin
 
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C70EF1F0305A1ADB9986DBD8D46F45428842CE5E && \
-    echo "deb http://ppa.launchpad.net/bitcoin/bitcoin/ubuntu xenial main" > /etc/apt/sources.list.d/bitcoin.list
+# RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C70EF1F0305A1ADB9986DBD8D46F45428842CE5E && \
+#     echo "deb http://ppa.launchpad.net/bitcoin/bitcoin/ubuntu xenial main" > /etc/apt/sources.list.d/bitcoin.list
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-		bitcoind \
-	&& apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+# 		bitcoind \
+# 	&& apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # grab gosu for easy step-down from root
 ENV GOSU_VERSION 1.7
@@ -27,6 +27,8 @@ RUN set -x \
 	&& apt-get update && apt-get install -y --no-install-recommends \
 		ca-certificates \
 		wget \
+	&& apt-get install -y libminiupnpc-dev libzmq3-dev \
+	&& apt-get install -y libssl-dev libevent-dev libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-test-dev libboost-thread-dev \
 	&& wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)" \
 	&& wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture).asc" \
 	&& export GNUPGHOME="$(mktemp -d)" \
@@ -41,6 +43,9 @@ RUN set -x \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ADD ./bin /usr/local/bin
+COPY ./bitcoin/src/bitcoin-cli /usr/local/bin/bitcoin-cli
+COPY ./bitcoin/src/bitcoin-tx /usr/local/bin/bitcoin-tx
+COPY ./bitcoin/src/bitcoind /usr/local/bin/bitcoind
 
 VOLUME ["/bitcoin"]
 
